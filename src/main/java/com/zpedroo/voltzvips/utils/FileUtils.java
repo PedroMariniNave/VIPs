@@ -111,9 +111,9 @@ public class FileUtils {
         MAIN("main", "menus", "menus"),
         CHANGE_VIP("changevip", "menus", "menus");
 
-        public String name;
-        public String resource;
-        public String folder;
+        private String name;
+        private String resource;
+        private String folder;
 
         Files(String name, String resource, String folder) {
             this.name = name;
@@ -137,7 +137,7 @@ public class FileUtils {
     public class FileManager {
 
         private File file;
-        private FileConfiguration yamlConfig;
+        private FileConfiguration fileConfig;
 
         public FileManager(Files file) {
             this.file = new File(plugin.getDataFolder() + (file.getFolder().isEmpty() ? "" : "/" + file.getFolder()), file.getName() + ".yml");
@@ -155,14 +155,14 @@ public class FileUtils {
 
             try {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(this.file), StandardCharsets.UTF_8));
-                yamlConfig = YamlConfiguration.loadConfiguration(reader);
+                fileConfig = YamlConfiguration.loadConfiguration(reader);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
 
         public FileConfiguration get() {
-            return yamlConfig;
+            return fileConfig;
         }
 
         public File getFile() {
@@ -171,7 +171,7 @@ public class FileUtils {
 
         public void save() {
             try {
-                yamlConfig.save(file);
+                fileConfig.save(file);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -179,7 +179,7 @@ public class FileUtils {
 
         public void reload() {
             try {
-                yamlConfig = YamlConfiguration.loadConfiguration(file);
+                fileConfig = YamlConfiguration.loadConfiguration(file);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

@@ -38,6 +38,7 @@ public class PlayerGeneralListeners implements Listener {
 
         for (PlayerVip vip : data.getVIPs()) {
             if (vip == null) continue;
+
             VipManager.getInstance().checkExpiration(player, vip);
         }
 

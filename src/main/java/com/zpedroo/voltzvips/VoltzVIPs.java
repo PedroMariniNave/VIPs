@@ -1,6 +1,7 @@
 package com.zpedroo.voltzvips;
 
 import com.zpedroo.voltzvips.commands.VIPCmd;
+import com.zpedroo.voltzvips.hooks.PlaceholderAPIHook;
 import com.zpedroo.voltzvips.listeners.PlayerGeneralListeners;
 import com.zpedroo.voltzvips.managers.DataManager;
 import com.zpedroo.voltzvips.managers.VipManager;
@@ -49,6 +50,10 @@ public class VoltzVIPs extends JavaPlugin {
         new Menus();
         new VerificationTask(this);
         new SaveTask(this);
+
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new PlaceholderAPIHook(this).register();
+        }
 
         registerCommand(COMMAND, ALIASES, new VIPCmd());
         registerListeners();

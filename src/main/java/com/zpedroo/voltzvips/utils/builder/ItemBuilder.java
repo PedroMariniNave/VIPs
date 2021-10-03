@@ -26,8 +26,8 @@ public class ItemBuilder {
     private Integer slot;
     private List<InventoryUtils.Action> actions;
 
-    private static Method metaSetProfileMethod;
-    private static Field metaProfileField;
+    private Method metaSetProfileMethod;
+    private Field metaProfileField;
 
     public ItemBuilder(Material material, int amount, short durability, Integer slot, List<InventoryUtils.Action> actions) {
         if (StringUtils.equals(material.toString(), "PLAYER_HEAD")) {
