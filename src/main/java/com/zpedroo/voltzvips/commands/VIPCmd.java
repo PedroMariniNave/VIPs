@@ -1,14 +1,20 @@
 package com.zpedroo.voltzvips.commands;
 
+import com.zpedroo.voltzvips.managers.DataManager;
 import com.zpedroo.voltzvips.managers.VipManager;
+import com.zpedroo.voltzvips.objects.PlayerData;
+import com.zpedroo.voltzvips.objects.PlayerVip;
 import com.zpedroo.voltzvips.objects.Vip;
 import com.zpedroo.voltzvips.utils.config.Messages;
 import com.zpedroo.voltzvips.utils.menu.Menus;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.concurrent.TimeUnit;
 
 public class VIPCmd implements CommandExecutor {
 
@@ -19,8 +25,37 @@ public class VIPCmd implements CommandExecutor {
         if (args.length > 0) {
             Player target = null;
             Vip vip = null;
+            int durationInDays = 0;
             switch (args[0].toUpperCase()) {
-                case "GIVE", "ADD" -> {
+                case "ADDALL":
+                    if (!sender.hasPermission("vips.admin")) break;
+                    if (args.length < 2) break;
+
+                    try {
+                        durationInDays = Integer.parseInt(args[1]);
+                    } catch (Exception ex) {
+                        // ignore
+                    }
+
+                    if (durationInDays <= 0) {
+                        sender.sendMessage(Messages.INVALID_DURATION);
+                        return true;
+                    }
+
+                    for (OfflinePlayer offlinePlayer : Bukkit.getOfflinePlayers()) {
+                        PlayerData data = DataManager.getInstance().load(offlinePlayer);
+                        if (data.getVIPs().isEmpty()) continue;
+
+                        for (PlayerVip playerVip : data.getVIPs()) {
+                            playerVip.setExpiration(playerVip.getExpiration() + TimeUnit.DAYS.toMillis(durationInDays));
+                        }
+
+                        data.setUpdate(true);
+                        DataManager.getInstance().save(offlinePlayer);
+                    }
+                    return true;
+                case "GIVE":
+                case "ADD":
                     if (!sender.hasPermission("vips.admin")) break;
                     if (args.length < 4) break;
 
@@ -36,22 +71,20 @@ public class VIPCmd implements CommandExecutor {
                         return true;
                     }
 
-                    Integer durationInDays = null;
                     try {
                         durationInDays = Integer.parseInt(args[3]);
                     } catch (Exception ex) {
                         // ignore
                     }
 
-                    if (durationInDays == null || durationInDays <= 0) {
+                    if (durationInDays <= 0) {
                         sender.sendMessage(Messages.INVALID_DURATION);
                         return true;
                     }
 
                     VipManager.getInstance().addVip(target, vip, durationInDays);
                     return true;
-                }
-                case "REMOVE" -> {
+                case "REMOVE":
                     if (!sender.hasPermission("vips.admin")) break;
                     if (args.length < 3) break;
 
@@ -69,7 +102,6 @@ public class VIPCmd implements CommandExecutor {
 
                     VipManager.getInstance().removeVip(target, vip);
                     return true;
-                }
             }
         }
 

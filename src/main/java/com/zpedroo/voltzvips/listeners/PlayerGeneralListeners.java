@@ -59,7 +59,7 @@ public class PlayerGeneralListeners implements Listener {
         }
 
         new HashSet<>(Bukkit.getOnlinePlayers()).forEach(target -> {
-            target.playSound(target.getLocation(), Sound.ENTITY_ENDER_DRAGON_FLAP, 0.5f, 10f);
+            target.playSound(target.getLocation(), Sound.ENDERDRAGON_WINGS, 0.5f, 10f);
         });
     }
 

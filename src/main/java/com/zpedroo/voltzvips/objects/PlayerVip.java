@@ -3,9 +3,9 @@ package com.zpedroo.voltzvips.objects;
 public class PlayerVip {
 
     private Vip vip;
-    private Long expiration;
+    private long expiration;
 
-    public PlayerVip(Vip vip, Long expiration) {
+    public PlayerVip(Vip vip, long expiration) {
         this.vip = vip;
         this.expiration = expiration;
     }
@@ -14,7 +14,11 @@ public class PlayerVip {
         return vip;
     }
 
-    public Long getExpiration() {
+    public long getExpiration() {
         return expiration;
+    }
+
+    public void setExpiration(long expiration) {
+        this.expiration = expiration;
     }
 }

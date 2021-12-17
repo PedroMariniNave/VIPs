@@ -3,7 +3,7 @@ package com.zpedroo.voltzvips.managers;
 import com.zpedroo.voltzvips.managers.cache.DataCache;
 import com.zpedroo.voltzvips.mysql.DBConnection;
 import com.zpedroo.voltzvips.objects.PlayerData;
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 
 import java.util.HashSet;
 
@@ -19,7 +19,7 @@ public class DataManager {
         this.dataCache = new DataCache();
     }
 
-    public PlayerData load(Player player) {
+    public PlayerData load(OfflinePlayer player) {
         PlayerData data = dataCache.getPlayerData().get(player);
         if (data == null) {
             data = DBConnection.getInstance().getDBManager().loadData(player);
@@ -29,7 +29,7 @@ public class DataManager {
         return data;
     }
 
-    public void save(Player player) {
+    public void save(OfflinePlayer player) {
         PlayerData data = dataCache.getPlayerData().get(player);
         if (data == null) return;
         if (!data.isQueueUpdate()) return;
@@ -42,7 +42,7 @@ public class DataManager {
         new HashSet<>(dataCache.getPlayerData().keySet()).forEach(this::save);
     }
 
-    private void cache(Player player, PlayerData data) {
+    private void cache(OfflinePlayer player, PlayerData data) {
         dataCache.getPlayerData().put(player, data);
     }
 

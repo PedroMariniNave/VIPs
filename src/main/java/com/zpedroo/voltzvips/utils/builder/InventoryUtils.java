@@ -1,153 +1,97 @@
 package com.zpedroo.voltzvips.utils.builder;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import com.zpedroo.voltzvips.VoltzVIPs;
-import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.event.inventory.InventoryType;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class InventoryUtils {
 
     private static InventoryUtils instance;
-    public static InventoryUtils getInstance() { return instance; }
+    public static InventoryUtils get() { return instance; }
 
-    private Table<Inventory, Object, List<Action>> inventoryActions;
+    private Map<Player, InventoryBuilder> viewers;
 
     public InventoryUtils() {
         instance = this;
-        this.inventoryActions = HashBasedTable.create();
-        VoltzVIPs.get().getServer().getPluginManager().registerEvents(new ActionListeners(), VoltzVIPs.get()); // register inventory listener
+        this.viewers = new HashMap<>(128);
+        VoltzVIPs.get().getServer().getPluginManager().registerEvents(new ActionListeners(), VoltzVIPs.get());
     }
 
-    public void addAction(Inventory inventory, Object object, Runnable action, ActionType type) {
-        List<Action> actions = hasAction(inventory, object) ? getActions(inventory, object) : new ArrayList<>(2);
-        actions.add(new Action(type, object, action));
-
-        inventoryActions.put(inventory, object, actions);
-    }
-
-    public Action getAction(Inventory inventory, Object object, ActionType actionType) {
-        if (!hasAction(inventory, object)) return null;
-
-        for (Action action : getActions(inventory, object)) {
-            if (action.getType() != actionType) continue;
-
-            return action;
-        }
-
-        return null;
-    }
-
-    public Boolean hasAction(Inventory inventory) {
-        return inventoryActions.containsRow(inventory);
-    }
-
-    public Boolean hasAction(Inventory inventory, Object object) {
-        return inventoryActions.row(inventory).containsKey(object);
-    }
-
-    public List<Action> getInventoryActions(Inventory inventory) {
-        if (!hasAction(inventory)) return null;
-
-        List<Action> ret = new ArrayList<>(inventoryActions.row(inventory).values().size());
-
-        for (List<Action> actions : inventoryActions.values()) {
-            ret.addAll(actions);
-        }
-
-        return ret;
-    }
-
-    public List<Action> getActions(Inventory inventory, Object object) {
-        return inventoryActions.row(inventory).get(object);
-    }
-
-    public static class Action {
-
-        private ActionType type;
-        private Object object;
-        private Runnable action;
-
-        public Action(ActionType type, Object object, Runnable action) {
-            this.type = type;
-            this.object = object;
-            this.action = action;
-        }
-
-        public ActionType getType() {
-            return type;
-        }
-
-        public Runnable getAction() {
-            return action;
-        }
-
-        public Object getObject() {
-            return object;
-        }
-
-        public void run() {
-            if (action == null) return;
-
-            action.run();
-        }
+    public Map<Player, InventoryBuilder> getViewers() {
+        return viewers;
     }
 
     private class ActionListeners implements Listener {
 
         @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
         public void onClick(InventoryClickEvent event) {
-            if (!hasAction(event.getInventory())) return;
+            Player player = (Player) event.getWhoClicked();
+            if (!viewers.containsKey(player)) return;
+
+            InventoryBuilder inventory = viewers.get(player);
+            if (inventory.getInventory().getViewers().isEmpty()) {
+                viewers.remove(player);
+                return;
+            }
 
             event.setCancelled(true);
+            if (event.getClickedInventory() == null) return;
+            if (event.getClickedInventory().getType().equals(InventoryType.PLAYER)) return;
 
-            if (event.getCurrentItem() == null || event.getCurrentItem().getType().equals(Material.AIR)) return;
-
-            Inventory inventory = event.getInventory();
-            ItemStack item = event.getCurrentItem().clone();
             int slot = event.getSlot();
 
-            Action action = null;
-
-            try {
-                action = getAction(inventory, item, ActionType.ALL_CLICKS);
-
-                if (action == null) {
-                    // try to found specific actions for items
-                    switch (event.getClick()) {
-                        case LEFT, SHIFT_LEFT -> action = getAction(inventory, item, ActionType.LEFT_CLICK);
-                        case RIGHT, SHIFT_RIGHT -> action = getAction(event.getInventory(), item, ActionType.RIGHT_CLICK);
-                    }
-                }
-            } finally {
-                if (action != null) return;
-
-                action = getAction(inventory, slot, ActionType.ALL_CLICKS);
-
-                if (action == null) {
-                    // try to found specific actions for items
-                    switch (event.getClick()) {
-                        case LEFT, SHIFT_LEFT -> action = getAction(inventory, slot, ActionType.LEFT_CLICK);
-                        case RIGHT, SHIFT_RIGHT -> action = getAction(event.getInventory(), slot, ActionType.RIGHT_CLICK);
-                    }
+            ActionType actionType = ActionType.ALL_CLICKS;
+            if (inventory.getAction(slot, actionType) == null) {
+                switch (event.getClick()) {
+                    case LEFT:
+                    case SHIFT_LEFT:
+                        actionType = ActionType.LEFT_CLICK;
+                        break;
+                    case RIGHT:
+                    case SHIFT_RIGHT:
+                        actionType = ActionType.RIGHT_CLICK;
+                        break;
+                    case MIDDLE:
+                        actionType = ActionType.SCROLL;
+                        break;
                 }
             }
 
-            if (action != null) action.run();
+            Action action = inventory.getAction(slot, actionType);
+            if (action != null) action.getAction().run();
+        }
+    }
+
+    public static class Action {
+
+        private Runnable action;
+        private ActionType actionType;
+
+        public Action(Runnable action, ActionType actionType) {
+            this.action = action;
+            this.actionType = actionType;
+        }
+
+        public Runnable getAction() {
+            return action;
+        }
+
+        public ActionType getActionType() {
+            return actionType;
         }
     }
 
     public enum ActionType {
         LEFT_CLICK,
         RIGHT_CLICK,
-        ALL_CLICKS
+        ALL_CLICKS,
+        SCROLL
     }
 }

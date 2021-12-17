@@ -4,7 +4,7 @@ import com.zpedroo.voltzvips.managers.VipManager;
 import com.zpedroo.voltzvips.objects.PlayerData;
 import com.zpedroo.voltzvips.objects.PlayerVip;
 import com.zpedroo.voltzvips.objects.Vip;
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 
 import java.sql.*;
 import java.util.HashSet;
@@ -18,7 +18,8 @@ public class DBManager {
             String query = "UPDATE `" + DBConnection.TABLE + "` SET" +
                     "`uuid`='" + data.getUUID().toString() + "', " +
                     "`vips`='" + serializeVips(data.getVIPs()) + "', " +
-                    "`selected`='" + (data.getSelectedVip() == null ? "" : data.getSelectedVip().getVip().getName()) + "';";
+                    "`selected`='" + (data.getSelectedVip() == null ? "" : data.getSelectedVip().getVip().getName()) + "' " +
+                    "WHERE `uuid`='" + data.getUUID().toString() + "';";
             executeUpdate(query);
             return;
         }
@@ -30,7 +31,7 @@ public class DBManager {
         executeUpdate(query);
     }
 
-    public PlayerData loadData(Player player) {
+    public PlayerData loadData(OfflinePlayer player) {
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet result = null;
@@ -70,7 +71,7 @@ public class DBManager {
 
         for (PlayerVip vip : vips) {
             builder.append(vip.getVip().getName()).append("#")
-                    .append(vip.getExpiration().toString()).append(",");
+                    .append(vip.getExpiration()).append(",");
         }
 
         return builder.toString();

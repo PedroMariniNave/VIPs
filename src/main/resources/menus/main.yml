@@ -5,7 +5,7 @@ Inventory:
   items:
     viparea:
       action: 'PLAYER:warp areavip'
-      type: PLAYER_HEAD
+      type: SKULL_ITEM
       owner: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjE0MmEzNWFjMGIwNTVlZDUwYTVjYmY4NzBiNmVmMWNjMWY5NGUyNjQyYjliYTY1MGM5ZTAzODVlNmNiZTM2In19fQ==
       name: '&6Área VIP'
       lore:
@@ -14,7 +14,7 @@ Inventory:
       slot: 20
     particles:
       action: 'PLAYER:particulas'
-      type: PLAYER_HEAD
+      type: SKULL_ITEM
       owner: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2FmNTliOGFhMGY4MzU0NmVmMGQxNzhjY2Y4N2U3ZWQ4OGNmNzg1OGNhYWU3OWIzNjMzY2JkNzViNjUwNTI1ZiJ9fX0=
       name: '&6Partículas'
       lore:

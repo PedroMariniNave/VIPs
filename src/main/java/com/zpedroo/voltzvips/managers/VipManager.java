@@ -8,7 +8,6 @@ import com.zpedroo.voltzvips.utils.FileUtils;
 import com.zpedroo.voltzvips.utils.builder.ItemBuilder;
 import com.zpedroo.voltzvips.utils.config.Messages;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.reflect.FieldUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -40,7 +39,7 @@ public class VipManager extends DataManager {
         return null;
     }
 
-    public Boolean usingVip(Player player, Vip vip) {
+    public boolean usingVip(Player player, Vip vip) {
         PlayerData data = load(player);
         PlayerVip selectedVip = data.getSelectedVip();
         if (selectedVip == null) return false;
@@ -48,7 +47,7 @@ public class VipManager extends DataManager {
         return selectedVip.getVip().getName().equals(vip.getName());
     }
 
-    public Boolean hasVip(Player player, Vip vip) {
+    public boolean hasVip(Player player, Vip vip) {
         Set<PlayerVip> vips = load(player).getVIPs();
         for (PlayerVip playerVip : vips) {
             if (playerVip == null) continue;
@@ -67,19 +66,29 @@ public class VipManager extends DataManager {
 
         PlayerVip selectedVIP = data.getSelectedVip();
         if (selectedVIP != null) {
-            executeCommands(player, selectedVIP.getVip().getRemoveCommands());
+            VoltzVIPs.get().getServer().getScheduler().runTaskLater(VoltzVIPs.get(),
+                    () -> executeCommands(player, selectedVIP.getVip().getRemoveCommands()), 0L);
         }
 
         data.setSelectedVip(playerVip);
-        executeCommands(player, playerVip.getVip().getAddCommands());
+        VoltzVIPs.get().getServer().getScheduler().runTaskLater(VoltzVIPs.get(),
+                () -> executeCommands(player, playerVip.getVip().getAddCommands()), 10L);
     }
 
-    public void addVip(Player player, Vip vip, Integer durationInDays) {
+    public void addVip(Player player, Vip vip, int durationInDays) {
         PlayerData data = load(player);
         if (data == null) return;
 
-        PlayerVip playerVIP = new PlayerVip(vip, System.currentTimeMillis() + TimeUnit.DAYS.toMillis(durationInDays));
-        data.addVip(playerVIP);
+        long durationInMillis = TimeUnit.DAYS.toMillis(durationInDays);
+
+        PlayerVip playerVIP = null;
+        if (hasVip(player, vip)) {
+            playerVIP = getPlayerVip(player, vip);
+            playerVIP.setExpiration(playerVIP.getExpiration() + durationInMillis);
+        } else {
+            playerVIP = new PlayerVip(vip, System.currentTimeMillis() + durationInMillis);
+            data.addVip(playerVIP);
+        }
 
         executeCommands(player, vip.getActivateCommands());
         selectVip(player, playerVIP);

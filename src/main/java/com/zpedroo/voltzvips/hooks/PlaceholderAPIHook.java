@@ -28,9 +28,11 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
 
     public String onPlaceholderRequest(Player player, String identifier) {
         PlayerData data = DataManager.getInstance().load(player);
-        return switch (identifier.toUpperCase()) {
-            case "VIP" -> data.getSelectedVip() == null ? "-/-" : data.getSelectedVip().getVip().getTag();
-            default -> null;
-        };
+        switch (identifier.toUpperCase()) {
+            case "VIP":
+                return data.getSelectedVip() == null ? "-/-" : data.getSelectedVip().getVip().getTag();
+            default:
+                return null;
+        }
     }
 }
